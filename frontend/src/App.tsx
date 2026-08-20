@@ -10,6 +10,8 @@ import Register from "./pages/Register.tsx";
 import PatientDashboard from "./pages/PatientDashboard";
 import HospitalDashboard from "./pages/HospitalDashboard";
 import HospitalDetails from "./pages/HospitalDetails";
+import BookAppointment from "./pages/BookAppointment";
+import MyAppointments from "./pages/MyAppointments";
 
 function ProtectedRoute({
   children,
@@ -126,9 +128,32 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/appointments/book"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "PATIENT",
+              ]}
+            >
+              <BookAppointment />
+            </ProtectedRoute>
+          }
+        />
+      <Route
+        path="/appointments"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "PATIENT",
+            ]}
+          >
+            <MyAppointments />
+          </ProtectedRoute>
+        }
+      />
       </Routes>
-
+      
 
 
     </BrowserRouter>

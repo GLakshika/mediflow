@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { pool } from "./config/database";
 import authRoutes from "./routes/authRoutes";
 import hospitalRoutes from "./routes/hospitalRoutes";
+import appointmentRoutes from "./routes/appointmentRoutes";
 
 dotenv.config();
 
@@ -50,6 +51,11 @@ app.use("/api/auth", authRoutes);
 app.use(
   "/api/hospitals",
   hospitalRoutes
+);
+
+app.use(
+  "/api/appointments",
+  appointmentRoutes
 );
 
 app.listen(PORT, () => {

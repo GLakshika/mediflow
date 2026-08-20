@@ -68,7 +68,13 @@ export default function PatientDashboard() {
           </div>
 
           <div className="dashboard-card">
-            <h3>📅 Appointments</h3>
+            <h3><button
+                onClick={() =>
+                    navigate("/appointments")
+                }
+                >
+                📅 My Appointments
+                </button></h3>
             <p>
               Manage your appointments
             </p>
