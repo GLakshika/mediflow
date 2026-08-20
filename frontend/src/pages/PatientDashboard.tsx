@@ -50,7 +50,11 @@ export default function PatientDashboard() {
         <div className="dashboard-grid">
 
           <div className="dashboard-card">
-            <h3>🏥 Find Hospital</h3>
+            <h3><button
+                onClick={() => navigate("/hospitals")}
+                >
+                🏥 Find Hospitals
+                </button></h3>
             <p>
               Search nearby hospitals
             </p>

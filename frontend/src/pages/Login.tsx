@@ -28,37 +28,35 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response =
-        await api.post(
-          "/auth/login",
-          {
-            email,
-            password,
-          }
-        );
+      const response = await api.post(
+  "/auth/login",
+  {
+    email,
+    password,
+  }
+);
 
-      const {
-        token,
-        user,
-      } = response.data;
+localStorage.setItem(
+  "token",
+  response.data.token
+);
 
-      localStorage.setItem(
-        "token",
-        token
-      );
+localStorage.setItem(
+  "user",
+  JSON.stringify(response.data.user)
+);
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(user)
-      );
-
-      if (
-        user.role === "PATIENT"
-      ) {
-        navigate("/patient");
-      } else {
-        navigate("/hospital");
-      }
+if (response.data.user.role === "PATIENT") {
+  navigate("/patient");
+} else if (
+  response.data.user.role === "DOCTOR"
+) {
+  navigate("/hospitals");
+} else if (
+  response.data.user.role === "HOSPITAL_ADMIN"
+) {
+  navigate("/hospitals");
+}
 
     } catch (error: any) {
 
