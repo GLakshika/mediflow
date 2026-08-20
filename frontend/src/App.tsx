@@ -9,7 +9,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register.tsx";
 import PatientDashboard from "./pages/PatientDashboard";
 import HospitalDashboard from "./pages/HospitalDashboard";
-
+import HospitalDetails from "./pages/HospitalDetails";
 
 function ProtectedRoute({
   children,
@@ -98,10 +98,11 @@ function App() {
         />
 
         <Route
-          path="/hospital"
+          path="/hospitals"
           element={
             <ProtectedRoute
               allowedRoles={[
+              "PATIENT",
                 "DOCTOR",
                 "HOSPITAL_ADMIN",
               ]}
@@ -111,7 +112,24 @@ function App() {
           }
         />
 
+        <Route
+          path="/hospitals/:id"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "PATIENT",
+                "DOCTOR",
+                "HOSPITAL_ADMIN",
+              ]}
+            >
+              <HospitalDetails />
+            </ProtectedRoute>
+          }
+        />
+
       </Routes>
+
+
 
     </BrowserRouter>
   );
