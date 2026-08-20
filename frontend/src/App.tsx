@@ -15,6 +15,8 @@ import MyAppointments from "./pages/MyAppointments";
 import MyQueue from "./pages/MyQueue";
 import Emergency from "./pages/Emergency";
 import Notifications from "./pages/Notifications";
+import HospitalAdminDashboard from "./pages/HospitalAdminDashboard";
+import ManageDoctors from "./pages/ManageDoctors";
 
 function ProtectedRoute({
   children,
@@ -186,6 +188,32 @@ function App() {
             allowedRoles={["PATIENT"]}
           >
             <Notifications />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "HOSPITAL_ADMIN",
+            ]}
+          >
+            <HospitalAdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/doctors"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "HOSPITAL_ADMIN",
+            ]}
+          >
+            <ManageDoctors />
           </ProtectedRoute>
         }
       />
