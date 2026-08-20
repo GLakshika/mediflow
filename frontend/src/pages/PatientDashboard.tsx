@@ -61,13 +61,6 @@ export default function PatientDashboard() {
           </div>
 
           <div className="dashboard-card">
-            <h3>👨‍⚕️ Find Doctor</h3>
-            <p>
-              Find available doctors
-            </p>
-          </div>
-
-          <div className="dashboard-card">
             <h3><button
                 onClick={() =>
                     navigate("/appointments")
