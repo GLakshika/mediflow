@@ -7,8 +7,9 @@ import authRoutes from "./routes/authRoutes";
 import hospitalRoutes from "./routes/hospitalRoutes";
 import appointmentRoutes from "./routes/appointmentRoutes";
 import queueRoutes from "./routes/queueRoutes";
+import emergencyRoutes from "./routes/emergencyRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
 dotenv.config();
-
 const app = express();
 
 const PORT = process.env.PORT || 5000;
@@ -61,6 +62,16 @@ app.use(
 app.use(
   "/api/queues",
   queueRoutes
+);
+
+app.use(
+  "/api/emergency",
+  emergencyRoutes
+);
+
+app.use(
+  "/api/notifications",
+  notificationRoutes
 );
 
 app.listen(PORT, () => {

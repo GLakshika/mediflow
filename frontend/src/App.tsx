@@ -13,6 +13,8 @@ import HospitalDetails from "./pages/HospitalDetails";
 import BookAppointment from "./pages/BookAppointment";
 import MyAppointments from "./pages/MyAppointments";
 import MyQueue from "./pages/MyQueue";
+import Emergency from "./pages/Emergency";
+import Notifications from "./pages/Notifications";
 
 function ProtectedRoute({
   children,
@@ -162,6 +164,28 @@ function App() {
             ]}
           >
             <MyQueue />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/emergency"
+        element={
+          <ProtectedRoute
+            allowedRoles={["PATIENT"]}
+          >
+            <Emergency />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute
+            allowedRoles={["PATIENT"]}
+          >
+            <Notifications />
           </ProtectedRoute>
         }
       />

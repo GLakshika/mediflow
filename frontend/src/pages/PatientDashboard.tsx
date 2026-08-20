@@ -87,14 +87,28 @@ export default function PatientDashboard() {
           </div>
 
           <div className="dashboard-card">
-            <h3>🚑 Emergency</h3>
+            <h3><button
+                    onClick={() =>
+                        navigate("/emergency")
+                    }
+                    >
+                    🚨 Emergency
+                    </button>
+            </h3>
             <p>
               Check emergency capacity
             </p>
           </div>
 
           <div className="dashboard-card">
-            <h3>🔔 Notifications</h3>
+            <h3><button
+                onClick={() =>
+                    navigate("/notifications")
+                }
+                >
+                🔔 Notifications
+                </button>
+            </h3>
             <p>
               View notifications
             </p>
