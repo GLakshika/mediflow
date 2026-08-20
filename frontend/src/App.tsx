@@ -12,6 +12,7 @@ import HospitalDashboard from "./pages/HospitalDashboard";
 import HospitalDetails from "./pages/HospitalDetails";
 import BookAppointment from "./pages/BookAppointment";
 import MyAppointments from "./pages/MyAppointments";
+import MyQueue from "./pages/MyQueue";
 
 function ProtectedRoute({
   children,
@@ -149,6 +150,18 @@ function App() {
             ]}
           >
             <MyAppointments />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/queue"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "PATIENT",
+            ]}
+          >
+            <MyQueue />
           </ProtectedRoute>
         }
       />

@@ -74,7 +74,13 @@ export default function PatientDashboard() {
           </div>
 
           <div className="dashboard-card">
-            <h3>🎫 My Queue</h3>
+            <h3><button
+                onClick={() =>
+                    navigate("/queue")
+                }
+                >
+                🎫 My Queue
+                </button></h3>
             <p>
               View your queue status
             </p>

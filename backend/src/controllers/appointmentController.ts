@@ -6,8 +6,20 @@ export const createAppointment = async (
   req: Request,
   res: Response
 ) => {
-
   try {
+    const user = (req as any).user;
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    if (user.role !== "PATIENT") {
+      return res.status(403).json({
+        message: "Only patients can book appointments",
+      });
+    }
 
     const {
       doctor_id,
@@ -16,122 +28,40 @@ export const createAppointment = async (
       appointment_time,
     } = req.body;
 
-
-    // --------------------------------
-    // Validate request
-    // --------------------------------
-
+    // Validate required fields
     if (
       !doctor_id ||
       !hospital_id ||
       !appointment_date ||
       !appointment_time
     ) {
-
       return res.status(400).json({
         message:
-          "Doctor, hospital, date and time are required",
+          "doctor_id, hospital_id, appointment_date and appointment_time are required",
       });
-
     }
 
-
-    // --------------------------------
-    // Get logged-in user
-    // --------------------------------
-
-    const user = (req as any).user;
-
-
-    if (!user) {
-
-      return res.status(401).json({
-        message: "Unauthorized",
-      });
-
-    }
-
-
-    // --------------------------------
-    // Only patients can book
-    // --------------------------------
-
-    if (user.role !== "PATIENT") {
-
-      return res.status(403).json({
-        message:
-          "Only patients can book appointments",
-      });
-
-    }
-
-
-    // --------------------------------
     // Check doctor
-    // --------------------------------
-
     const doctorResult = await pool.query(
       `
-      SELECT
-        id,
-        user_id,
-        hospital_id,
-        available
+      SELECT id
       FROM doctors
       WHERE id = $1
+      AND hospital_id = $2
+      AND available = true
       `,
-      [doctor_id]
+      [doctor_id, hospital_id]
     );
 
-
     if (doctorResult.rows.length === 0) {
-
       return res.status(404).json({
-        message: "Doctor not found",
-      });
-
-    }
-
-
-    const doctor =
-      doctorResult.rows[0];
-
-
-    // --------------------------------
-    // Check doctor availability
-    // --------------------------------
-
-    if (!doctor.available) {
-
-      return res.status(400).json({
         message:
-          "Doctor is currently unavailable",
+          "Doctor not found or doctor is unavailable",
       });
-
     }
 
-
-    // --------------------------------
-    // Make sure doctor belongs
-    // to selected hospital
-    // --------------------------------
-
-    if (
-      doctor.hospital_id !== hospital_id
-    ) {
-
-      return res.status(400).json({
-        message:
-          "Doctor does not belong to this hospital",
-      });
-
-    }
-
-
-    // --------------------------------
-    // Check existing appointment
-    // --------------------------------
-
+    // Check whether the same doctor already
+    // has an appointment at this date/time
     const existingAppointment =
       await pool.query(
         `
@@ -149,61 +79,118 @@ export const createAppointment = async (
         ]
       );
 
-
-    if (
-      existingAppointment.rows.length > 0
-    ) {
-
+    if (existingAppointment.rows.length > 0) {
       return res.status(409).json({
         message:
           "This time slot is already booked",
       });
-
     }
 
+    /*
+     * Start transaction.
+     *
+     * Appointment and queue should either
+     * both be created or neither should be created.
+     */
+    await pool.query("BEGIN");
 
-    // --------------------------------
-    // Create appointment
-    // --------------------------------
+    try {
+      // 1. Create appointment
+      const appointmentResult =
+        await pool.query(
+          `
+          INSERT INTO appointments (
+            patient_id,
+            doctor_id,
+            hospital_id,
+            appointment_date,
+            appointment_time,
+            status
+          )
+          VALUES ($1, $2, $3, $4, $5, 'BOOKED')
+          RETURNING *
+          `,
+          [
+            user.id,
+            doctor_id,
+            hospital_id,
+            appointment_date,
+            appointment_time,
+          ]
+        );
 
-    const result = await pool.query(
-      `
-      INSERT INTO appointments
-      (
-        patient_id,
-        doctor_id,
-        hospital_id,
-        appointment_date,
-        appointment_time,
-        status
-      )
-      VALUES
-      ($1, $2, $3, $4, $5, 'BOOKED')
-      RETURNING *
-      `,
-      [
-        user.id,
-        doctor_id,
-        hospital_id,
-        appointment_date,
-        appointment_time,
-      ]
-    );
+      const appointment =
+        appointmentResult.rows[0];
 
+      // 2. Find next queue number for this doctor
+      const queueResult =
+        await pool.query(
+          `
+          SELECT COALESCE(
+            MAX(queue_number),
+            0
+          ) + 1 AS next_queue_number
+          FROM queues
+          WHERE doctor_id = $1
+          AND appointment_id IN (
+            SELECT id
+            FROM appointments
+            WHERE appointment_date = $2
+          )
+          `,
+          [
+            doctor_id,
+            appointment_date,
+          ]
+        );
 
-    return res.status(201).json({
+      const queueNumber =
+        queueResult.rows[0].next_queue_number;
 
-      message:
-        "Appointment booked successfully",
+      // 3. Create queue entry
+      const queueInsert =
+        await pool.query(
+          `
+          INSERT INTO queues (
+            patient_id,
+            doctor_id,
+            appointment_id,
+            queue_number,
+            status
+          )
+          VALUES (
+            $1,
+            $2,
+            $3,
+            $4,
+            'WAITING'
+          )
+          RETURNING *
+          `,
+          [
+            user.id,
+            doctor_id,
+            appointment.id,
+            queueNumber,
+          ]
+        );
 
-      appointment:
-        result.rows[0],
+      await pool.query("COMMIT");
 
-    });
+      return res.status(201).json({
+        message:
+          "Appointment booked successfully",
+        appointment,
+        queue: queueInsert.rows[0],
+      });
 
+    } catch (transactionError) {
+      await pool.query("ROLLBACK");
+
+      throw transactionError;
+    }
 
   } catch (error) {
-
     console.error(
       "Create appointment error:",
       error
@@ -213,9 +200,7 @@ export const createAppointment = async (
       message:
         "Failed to create appointment",
     });
-
   }
-
 };
 
 export const getMyAppointments = async (

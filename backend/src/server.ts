@@ -6,7 +6,7 @@ import { pool } from "./config/database";
 import authRoutes from "./routes/authRoutes";
 import hospitalRoutes from "./routes/hospitalRoutes";
 import appointmentRoutes from "./routes/appointmentRoutes";
-
+import queueRoutes from "./routes/queueRoutes";
 dotenv.config();
 
 const app = express();
@@ -56,6 +56,11 @@ app.use(
 app.use(
   "/api/appointments",
   appointmentRoutes
+);
+
+app.use(
+  "/api/queues",
+  queueRoutes
 );
 
 app.listen(PORT, () => {
