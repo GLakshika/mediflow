@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 import { pool } from "./config/database";
 import authRoutes from "./routes/authRoutes";
+import hospitalRoutes from "./routes/hospitalRoutes";
 
 dotenv.config();
 
@@ -46,9 +47,14 @@ app.get("/api/health", async (_req, res) => {
 // Authentication routes
 app.use("/api/auth", authRoutes);
 
+app.use(
+  "/api/hospitals",
+  hospitalRoutes
+);
 
 app.listen(PORT, () => {
   console.log(
     `MediFlow backend running on http://localhost:${PORT}`
   );
 });
+
