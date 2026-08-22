@@ -5,9 +5,16 @@ import dotenv from "dotenv";
 import { pool } from "./config/database";
 import authRoutes from "./routes/authRoutes";
 import hospitalRoutes from "./routes/hospitalRoutes";
+import appointmentRoutes from "./routes/appointmentRoutes";
+import queueRoutes from "./routes/queueRoutes";
+import emergencyRoutes from "./routes/emergencyRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
+import hospitalAdminRoutes from "./routes/hospitalAdminRoutes";
+import doctorRoutes from "./routes/doctorRoutes";
+import departmentRoutes from "./routes/departmentRoutes";
+import doctorAppointmentRoutes from "./routes/doctorAppointmentRoutes";
 
 dotenv.config();
-
 const app = express();
 
 const PORT = process.env.PORT || 5000;
@@ -50,6 +57,46 @@ app.use("/api/auth", authRoutes);
 app.use(
   "/api/hospitals",
   hospitalRoutes
+);
+
+app.use(
+  "/api/appointments",
+  appointmentRoutes
+);
+
+app.use(
+  "/api/queues",
+  queueRoutes
+);
+
+app.use(
+  "/api/emergency",
+  emergencyRoutes
+);
+
+app.use(
+  "/api/notifications",
+  notificationRoutes
+);
+
+app.use(
+  "/api/hospital-admin",
+  hospitalAdminRoutes
+);
+
+app.use(
+  "/api/doctors",
+  doctorRoutes
+);
+
+app.use(
+  "/api/departments",
+  departmentRoutes
+);
+
+app.use(
+  "/api/appointments",
+  doctorAppointmentRoutes
 );
 
 app.listen(PORT, () => {

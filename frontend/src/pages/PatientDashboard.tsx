@@ -61,35 +61,54 @@ export default function PatientDashboard() {
           </div>
 
           <div className="dashboard-card">
-            <h3>👨‍⚕️ Find Doctor</h3>
-            <p>
-              Find available doctors
-            </p>
-          </div>
-
-          <div className="dashboard-card">
-            <h3>📅 Appointments</h3>
+            <h3><button
+                onClick={() =>
+                    navigate("/appointments")
+                }
+                >
+                📅 My Appointments
+                </button></h3>
             <p>
               Manage your appointments
             </p>
           </div>
 
           <div className="dashboard-card">
-            <h3>🎫 My Queue</h3>
+            <h3><button
+                onClick={() =>
+                    navigate("/queue")
+                }
+                >
+                🎫 My Queue
+                </button></h3>
             <p>
               View your queue status
             </p>
           </div>
 
           <div className="dashboard-card">
-            <h3>🚑 Emergency</h3>
+            <h3><button
+                    onClick={() =>
+                        navigate("/emergency")
+                    }
+                    >
+                    🚨 Emergency
+                    </button>
+            </h3>
             <p>
               Check emergency capacity
             </p>
           </div>
 
           <div className="dashboard-card">
-            <h3>🔔 Notifications</h3>
+            <h3><button
+                onClick={() =>
+                    navigate("/notifications")
+                }
+                >
+                🔔 Notifications
+                </button>
+            </h3>
             <p>
               View notifications
             </p>

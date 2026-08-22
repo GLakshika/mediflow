@@ -51,11 +51,13 @@ if (response.data.user.role === "PATIENT") {
 } else if (
   response.data.user.role === "DOCTOR"
 ) {
-  navigate("/hospitals");
+  navigate("/doctor");
 } else if (
   response.data.user.role === "HOSPITAL_ADMIN"
 ) {
-  navigate("/hospitals");
+  navigate("/admin");
+} else {
+    navigate("/login");
 }
 
     } catch (error: any) {
