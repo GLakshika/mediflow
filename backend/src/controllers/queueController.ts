@@ -388,10 +388,6 @@ export const completeQueue = async (
     const queue =
       queueResult.rows[0];
 
-    // -------------------------------------------------
-    // Make sure queue is currently CALLED
-    // -------------------------------------------------
-
     if (queue.status !== "CALLED") {
       await client.query("ROLLBACK");
 
@@ -401,9 +397,39 @@ export const completeQueue = async (
       });
     }
 
-    // -------------------------------------------------
-    // Update queue
-    // -------------------------------------------------
+    const appointmentResult = await client.query(
+      `
+      SELECT id, status
+      FROM appointments
+      WHERE id = $1
+        AND doctor_id = $2
+      FOR UPDATE
+      `,
+      [
+        queue.appointment_id,
+        doctorId,
+      ]
+    );
+
+    if (appointmentResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+
+      return res.status(404).json({
+        message:
+          "Appointment not found for this queue entry",
+      });
+    }
+
+    const appointment = appointmentResult.rows[0];
+
+    if (appointment.status !== "BOOKED") {
+      await client.query("ROLLBACK");
+
+      return res.status(400).json({
+        message:
+          "Only a booked appointment can be completed",
+      });
+    }
 
     const updatedQueue =
       await client.query(
@@ -420,10 +446,6 @@ export const completeQueue = async (
         ]
       );
 
-    // -------------------------------------------------
-    // Update related appointment
-    // -------------------------------------------------
-
     if (queue.appointment_id) {
 
       await client.query(
@@ -431,9 +453,11 @@ export const completeQueue = async (
         UPDATE appointments
         SET status = 'COMPLETED'
         WHERE id = $1
+          AND doctor_id = $2
         `,
         [
           queue.appointment_id,
+          doctorId,
         ]
       );
 
@@ -546,9 +570,31 @@ export const skipPatient = async (
 
     const queue = queueResult.rows[0];
 
-    // ---------------------------------------------
-    // Update queue → SKIPPED
-    // ---------------------------------------------
+    const appointmentResult = await client.query(
+      `
+      SELECT id, status
+      FROM appointments
+      WHERE id = $1
+        AND doctor_id = $2
+      FOR UPDATE
+      `,
+      [queue.appointment_id, doctorId]
+    );
+
+    if (appointmentResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({
+        message: "Appointment not found for this queue entry",
+      });
+    }
+
+    if (appointmentResult.rows[0].status !== "BOOKED") {
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        message:
+          "Only a booked appointment can be marked as no-show",
+      });
+    }
 
     const updatedQueue = await client.query(
       `
@@ -561,18 +607,15 @@ export const skipPatient = async (
       [queueId, doctorId]
     );
 
-    // ---------------------------------------------
-    // Update appointment → NO_SHOW
-    // ---------------------------------------------
-
     if (queue.appointment_id) {
       await client.query(
         `
         UPDATE appointments
         SET status = 'NO_SHOW'
         WHERE id = $1
+          AND doctor_id = $2
         `,
-        [queue.appointment_id]
+        [queue.appointment_id, doctorId]
       );
     }
 

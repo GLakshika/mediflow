@@ -99,11 +99,6 @@ app.use(
   doctorAppointmentRoutes
 );
 
-app.use(
-  "/api/queues",
-  queueRoutes
-);
-
 app.listen(PORT, () => {
   console.log(
     `MediFlow backend running on http://localhost:${PORT}`

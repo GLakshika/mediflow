@@ -257,7 +257,7 @@ function HospitalAdminDashboard() {
 
         <button
           onClick={() =>
-            navigate("/admin/emergency")
+            navigate("/hospitals")
           }
         >
           🚨 Emergency Capacity
@@ -265,7 +265,7 @@ function HospitalAdminDashboard() {
 
         <button
           onClick={() =>
-            navigate("/admin/appointments")
+            navigate("/doctor")
           }
         >
           📅 Appointments

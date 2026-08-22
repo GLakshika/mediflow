@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { formatDisplayDate } from "../utils/date";
 
 interface Appointment {
   id: string;
@@ -413,7 +414,7 @@ function DoctorDashboard() {
 
                 <p>
                   📅{" "}
-                  {appointment.appointment_date}
+                  {formatDisplayDate(appointment.appointment_date)}
                 </p>
 
                 <p>
@@ -602,7 +603,7 @@ function DoctorDashboard() {
 
         {entry.appointment_date && (
           <p>
-            📅 {entry.appointment_date}
+            📅 {formatDisplayDate(entry.appointment_date)}
           </p>
         )}
 

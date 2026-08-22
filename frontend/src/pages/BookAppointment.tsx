@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
+import { formatDateForInput } from "../utils/date";
 
 interface Doctor {
   id: string;
@@ -387,11 +388,7 @@ function BookAppointment() {
             <input
               type="date"
               value={date}
-              min={
-                new Date()
-                  .toISOString()
-                  .split("T")[0]
-              }
+              min={formatDateForInput(new Date())}
               onChange={(event) =>
                 setDate(event.target.value)
               }

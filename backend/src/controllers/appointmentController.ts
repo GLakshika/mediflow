@@ -332,6 +332,28 @@ export const cancelAppointment = async (
       });
     }
 
+    const queueResult = await pool.query(
+      `
+      SELECT id, status
+      FROM queues
+      WHERE appointment_id = $1
+      FOR UPDATE
+      `,
+      [id]
+    );
+
+    if (queueResult.rows.length > 0) {
+      await pool.query(
+        `
+        UPDATE queues
+        SET status = 'SKIPPED'
+        WHERE appointment_id = $1
+        AND status IN ('WAITING', 'CALLED')
+        `,
+        [id]
+      );
+    }
+
     const result = await pool.query(
       `
       UPDATE appointments

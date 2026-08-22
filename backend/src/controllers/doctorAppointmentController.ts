@@ -93,6 +93,8 @@ export const updateDoctorAppointmentStatus = async (
   req: Request,
   res: Response
 ) => {
+  const client = await pool.connect();
+
   try {
     const user = (req as any).user;
     const appointmentId = req.params.id;
@@ -125,8 +127,7 @@ export const updateDoctorAppointmentStatus = async (
       });
     }
 
-    // Find doctor profile
-    const doctorResult = await pool.query(
+    const doctorResult = await client.query(
       `
       SELECT id
       FROM doctors
@@ -141,11 +142,105 @@ export const updateDoctorAppointmentStatus = async (
       });
     }
 
-    const doctorId =
-      doctorResult.rows[0].id;
+    const doctorId = doctorResult.rows[0].id;
 
-    // Update only this doctor's appointment
-    const result = await pool.query(
+    await client.query("BEGIN");
+
+    const appointmentResult = await client.query(
+      `
+      SELECT id, status
+      FROM appointments
+      WHERE id = $1
+        AND doctor_id = $2
+      FOR UPDATE
+      `,
+      [appointmentId, doctorId]
+    );
+
+    if (appointmentResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({
+        message:
+          "Appointment not found for this doctor",
+      });
+    }
+
+    const appointment = appointmentResult.rows[0];
+
+    if (appointment.status !== "BOOKED") {
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        message:
+          "Only booked appointments can be updated from this route",
+      });
+    }
+
+    if (status === "COMPLETED") {
+      const queueResult = await client.query(
+        `
+        SELECT id, status
+        FROM queues
+        WHERE appointment_id = $1
+          AND doctor_id = $2
+        FOR UPDATE
+        `,
+        [appointmentId, doctorId]
+      );
+
+      if (queueResult.rows.length === 0) {
+        await client.query("ROLLBACK");
+        return res.status(400).json({
+          message:
+            "No queue entry exists for this appointment",
+        });
+      }
+
+      if (queueResult.rows[0].status !== "CALLED") {
+        await client.query("ROLLBACK");
+        return res.status(400).json({
+          message:
+            "Only a called patient can be marked completed",
+        });
+      }
+
+      await client.query(
+        `
+        UPDATE queues
+        SET status = 'COMPLETED'
+        WHERE appointment_id = $1
+          AND doctor_id = $2
+        `,
+        [appointmentId, doctorId]
+      );
+    }
+
+    if (status === "NO_SHOW") {
+      await client.query(
+        `
+        UPDATE queues
+        SET status = 'SKIPPED'
+        WHERE appointment_id = $1
+          AND doctor_id = $2
+          AND status IN ('WAITING', 'CALLED')
+        `,
+        [appointmentId, doctorId]
+      );
+    }
+
+    if (status === "CANCELLED") {
+      await client.query(
+        `
+        UPDATE queues
+        SET status = 'SKIPPED'
+        WHERE appointment_id = $1
+          AND doctor_id = $2
+          AND status IN ('WAITING', 'CALLED')
+        `,
+        [appointmentId, doctorId]
+      );
+    }
+
+    const result = await client.query(
       `
       UPDATE appointments
       SET status = $1
@@ -168,12 +263,7 @@ export const updateDoctorAppointmentStatus = async (
       ]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        message:
-          "Appointment not found for this doctor",
-      });
-    }
+    await client.query("COMMIT");
 
     return res.status(200).json({
       message:
@@ -183,7 +273,7 @@ export const updateDoctorAppointmentStatus = async (
     });
 
   } catch (error) {
-
+    await client.query("ROLLBACK");
     console.error(
       "Update appointment status error:",
       error
@@ -193,5 +283,7 @@ export const updateDoctorAppointmentStatus = async (
       message:
         "Failed to update appointment status",
     });
+  } finally {
+    client.release();
   }
 };

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { formatDisplayDate } from "../utils/date";
 
 interface Appointment {
   id: string;
@@ -253,7 +254,7 @@ function MyAppointments() {
 
                 <p>
                   📅{" "}
-                  {appointment.appointment_date}
+                  {formatDisplayDate(appointment.appointment_date)}
                 </p>
 
                 <p>

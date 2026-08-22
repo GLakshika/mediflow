@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { formatDisplayDate } from "../utils/date";
 
 interface Queue {
   id: string;
@@ -283,7 +284,7 @@ function MyQueue() {
                   </strong>
 
                   <p>
-                    📅 {queue.appointment_date}
+                    📅 {formatDisplayDate(queue.appointment_date)}
                   </p>
                 </div>
 
