@@ -18,6 +18,7 @@ import Notifications from "./pages/Notifications";
 import HospitalAdminDashboard from "./pages/HospitalAdminDashboard";
 import ManageDoctors from "./pages/ManageDoctors";
 import ManageDepartments from "./pages/ManageDepartments";
+import DoctorDashboard from "./pages/DoctorDashboard";
 
 function ProtectedRoute({
   children,
@@ -228,6 +229,19 @@ function App() {
             ]}
           >
             <ManageDepartments />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/doctor"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "DOCTOR",
+            ]}
+          >
+            <DoctorDashboard />
           </ProtectedRoute>
         }
       />

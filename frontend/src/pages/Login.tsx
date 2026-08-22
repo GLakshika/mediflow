@@ -47,7 +47,7 @@ localStorage.setItem(
 );
 
 if (response.data.user.role === "PATIENT") {
-  navigate("/hospitals");
+  navigate("/patient");
 } else if (
   response.data.user.role === "DOCTOR"
 ) {

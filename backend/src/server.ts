@@ -12,6 +12,8 @@ import notificationRoutes from "./routes/notificationRoutes";
 import hospitalAdminRoutes from "./routes/hospitalAdminRoutes";
 import doctorRoutes from "./routes/doctorRoutes";
 import departmentRoutes from "./routes/departmentRoutes";
+import doctorAppointmentRoutes from "./routes/doctorAppointmentRoutes";
+
 dotenv.config();
 const app = express();
 
@@ -90,6 +92,16 @@ app.use(
 app.use(
   "/api/departments",
   departmentRoutes
+);
+
+app.use(
+  "/api/appointments",
+  doctorAppointmentRoutes
+);
+
+app.use(
+  "/api/queues",
+  queueRoutes
 );
 
 app.listen(PORT, () => {

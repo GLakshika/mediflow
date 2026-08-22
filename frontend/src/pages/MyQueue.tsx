@@ -345,6 +345,13 @@ function MyQueue() {
                 </p>
 
               )}
+              {queue.status === "CANCELLED" && (
+              <p>
+                ❌ Your queue entry has been cancelled.
+                Please contact the hospital if you need
+                assistance.
+              </p>
+            )}
 
             </div>
 
