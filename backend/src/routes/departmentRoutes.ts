@@ -1,14 +1,14 @@
 import express from "express";
 
 import {
-  getAdminDoctors,
-  addDoctor,
-  updateDoctor,
-  updateDoctorStatus
-} from "../controllers/doctorController";
+  getAdminDepartments,
+  addDepartment,
+  updateDepartment,
+  updateDepartmentStatus,
+} from "../controllers/departmentController";
 
 import {
-  authenticate,
+  authenticate
 } from "../middleware/authMiddleware";
 
 const router = express.Router();
@@ -16,25 +16,25 @@ const router = express.Router();
 router.get(
   "/admin",
   authenticate,
-  getAdminDoctors
+  getAdminDepartments
 );
 
 router.post(
   "/admin",
   authenticate,
-  addDoctor
+  addDepartment
 );
 
-router.put(
+router.patch(
   "/admin/:id",
   authenticate,
-  updateDoctor
+  updateDepartment
 );
 
 router.patch(
   "/admin/:id/status",
   authenticate,
-  updateDoctorStatus
+  updateDepartmentStatus
 );
 
 export default router;
