@@ -255,8 +255,7 @@ function HospitalAdminDashboard() {
           🏥 Manage Departments
         </button>
 
-        <div className="dashboard-card">
-        <h3>
+        
           <button
             onClick={() =>
               navigate("/admin/emergency")
@@ -264,17 +263,11 @@ function HospitalAdminDashboard() {
           >
             🚨 Emergency Capacity
           </button>
-        </h3>
-
-        <p>
-          Manage emergency beds, queue and
-          available doctors
-        </p>
-      </div>
+        
 
         <button
           onClick={() =>
-            navigate("/doctor")
+            navigate("/admin/appointments")
           }
         >
           📅 Appointments

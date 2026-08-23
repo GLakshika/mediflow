@@ -101,3 +101,93 @@ export const getAdminDashboard = async (
     });
   }
 };
+
+export const getAdminAppointments = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const user = (req as any).user;
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    if (user.role !== "HOSPITAL_ADMIN") {
+      return res.status(403).json({
+        message: "Only hospital administrators can view hospital appointments",
+      });
+    }
+
+    const hospitalResult = await pool.query(
+      `
+      SELECT hospital_id
+      FROM hospital_admins
+      WHERE user_id = $1
+      `,
+      [user.id]
+    );
+
+    if (hospitalResult.rows.length === 0) {
+      return res.status(404).json({
+        message: "No hospital is assigned to this administrator",
+      });
+    }
+
+    const hospitalId = hospitalResult.rows[0].hospital_id;
+
+    const result = await pool.query(
+      `
+      SELECT
+        a.id,
+        a.appointment_date,
+        a.appointment_time,
+        a.status,
+        a.created_at,
+
+        p.id AS patient_id,
+        p.name AS patient_name,
+        p.email AS patient_email,
+
+        d.id AS doctor_id,
+        du.name AS doctor_name,
+        d.specialization,
+
+        h.name AS hospital_name
+
+      FROM appointments a
+
+      JOIN hospitals h
+        ON a.hospital_id = h.id
+
+      JOIN doctors d
+        ON a.doctor_id = d.id
+
+      JOIN users du
+        ON d.user_id = du.id
+
+      JOIN users p
+        ON a.patient_id = p.id
+
+      WHERE a.hospital_id = $1
+
+      ORDER BY
+        a.appointment_date ASC,
+        a.appointment_time ASC
+      `,
+      [hospitalId]
+    );
+
+    return res.status(200).json({
+      appointments: result.rows,
+    });
+  } catch (error) {
+    console.error("Get hospital appointments error:", error);
+
+    return res.status(500).json({
+      message: "Failed to load hospital appointments",
+    });
+  }
+};
