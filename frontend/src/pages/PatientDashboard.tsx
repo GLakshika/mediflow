@@ -26,31 +26,35 @@ export default function PatientDashboard() {
 
 
   return (
-    <div className="dashboard">
+    <div className="dashboard patient-dashboard">
 
       <nav>
-        <h2>MediFlow</h2>
+        <div className="patient-brand">
+          <img src="/logo.jpg" alt="MediFlow logo" />
+          <span>MediFlow</span>
+        </div>
 
-        <button onClick={logout}>
-          Logout
-        </button>
+        <div className="patient-nav-actions">
+          <span>Patient portal</span>
+          <button onClick={logout}>Sign out</button>
+        </div>
       </nav>
 
       <main>
-
-        <h1>
-          Welcome, {user.name}
-        </h1>
-
-        <p>
-          Patient Dashboard
-        </p>
+        <div className="patient-welcome">
+          <div>
+            <p className="patient-eyebrow">YOUR HEALTH, SIMPLIFIED</p>
+            <h1>Welcome, {user.name || "there"}</h1>
+            <p>Find care, manage appointments, and stay connected with your healthcare team.</p>
+          </div>
+          <div className="patient-welcome-mark">&#10010;</div>
+        </div>
 
 
         <div className="dashboard-grid">
 
-          <div className="dashboard-card">
-            <h3><button
+          <div className="dashboard-card patient-card">
+            <h3><button className="patient-action"
                 onClick={() => navigate("/hospitals")}
                 >
                 🏥 Find Hospitals
@@ -60,8 +64,8 @@ export default function PatientDashboard() {
             </p>
           </div>
 
-          <div className="dashboard-card">
-            <h3><button
+          <div className="dashboard-card patient-card">
+            <h3><button className="patient-action"
                 onClick={() =>
                     navigate("/appointments")
                 }
@@ -73,8 +77,8 @@ export default function PatientDashboard() {
             </p>
           </div>
 
-          <div className="dashboard-card">
-            <h3><button
+          <div className="dashboard-card patient-card">
+            <h3><button className="patient-action"
                 onClick={() =>
                     navigate("/queue")
                 }
@@ -86,8 +90,8 @@ export default function PatientDashboard() {
             </p>
           </div>
 
-          <div className="dashboard-card">
-            <h3><button
+          <div className="dashboard-card patient-card">
+            <h3><button className="patient-action"
                     onClick={() =>
                         navigate("/emergency")
                     }
@@ -100,8 +104,8 @@ export default function PatientDashboard() {
             </p>
           </div>
 
-          <div className="dashboard-card">
-            <h3><button
+          <div className="dashboard-card patient-card">
+            <h3><button className="patient-action"
                 onClick={() =>
                     navigate("/notifications")
                 }

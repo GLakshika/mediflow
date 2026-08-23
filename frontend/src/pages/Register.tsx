@@ -91,15 +91,15 @@ export default function Register() {
 
 
   return (
-    <div className="auth-container">
+    <main className="auth-container">
+      <div className="auth-content register-content">
+        <div className="auth-brand register-brand">
+          <img src="/logo.jpg" alt="MediFlow heart logo" />
+          <h1>MediFlow</h1>
+          <p>Create your account</p>
+        </div>
 
-      <div className="auth-card">
-
-        <h1>MediFlow</h1>
-
-        <p>
-          Create your account
-        </p>
+        <div className="auth-card">
 
         {error && (
           <div className="error">
@@ -180,8 +180,8 @@ export default function Register() {
           </Link>
         </p>
 
+        </div>
       </div>
-
-    </div>
+    </main>
   );
 }
