@@ -19,6 +19,7 @@ import HospitalAdminDashboard from "./pages/HospitalAdminDashboard";
 import ManageDoctors from "./pages/ManageDoctors";
 import ManageDepartments from "./pages/ManageDepartments";
 import DoctorDashboard from "./pages/DoctorDashboard";
+import ManageEmergency from "./pages/ManageEmergency.tsx";
 
 function ProtectedRoute({
   children,
@@ -244,6 +245,10 @@ function App() {
             <DoctorDashboard />
           </ProtectedRoute>
         }
+      />
+      <Route
+        path="/admin/emergency"
+        element={<ManageEmergency />}
       />
       </Routes>
       

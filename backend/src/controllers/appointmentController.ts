@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import {pool} from "../config/database";
-
+import { createNotification } from "./notificationController";
 
 export const createAppointment = async (
   req: Request,
@@ -118,6 +118,13 @@ export const createAppointment = async (
             appointment_time,
           ]
         );
+        await createNotification({
+          userId: user.id,
+          title: "Appointment Booked",
+          message:
+            "Your appointment has been booked successfully.",
+          type: "APPOINTMENT_BOOKED",
+        });
 
       const appointment =
         appointmentResult.rows[0];
@@ -183,7 +190,7 @@ export const createAppointment = async (
         appointment,
         queue: queueInsert.rows[0],
       });
-
+    
     } catch (transactionError) {
       await pool.query("ROLLBACK");
 
