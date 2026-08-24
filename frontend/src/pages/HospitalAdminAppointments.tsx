@@ -24,6 +24,34 @@ function HospitalAdminAppointments() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const normalizeStatus = (
+    value: string
+  ): "BOOKED" | "COMPLETED" | "CANCELLED" | "NO_SHOW" | "OTHER" => {
+    const normalized = value
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, "_")
+      .replace(/-/g, "_");
+
+    if (normalized === "BOOKED") {
+      return "BOOKED";
+    }
+
+    if (normalized === "COMPLETED") {
+      return "COMPLETED";
+    }
+
+    if (normalized === "CANCELLED" || normalized === "CANCELED") {
+      return "CANCELLED";
+    }
+
+    if (normalized === "NO_SHOW") {
+      return "NO_SHOW";
+    }
+
+    return "OTHER";
+  };
+
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
@@ -65,9 +93,40 @@ function HospitalAdminAppointments() {
     );
   }
 
+  const groupedAppointments: Record<
+    "BOOKED" | "COMPLETED" | "CANCELLED" | "NO_SHOW" | "OTHER",
+    Appointment[]
+  > = {
+    BOOKED: [],
+    COMPLETED: [],
+    CANCELLED: [],
+    NO_SHOW: [],
+    OTHER: [],
+  };
+
+  appointments.forEach((appointment) => {
+    const normalized = normalizeStatus(appointment.status);
+    groupedAppointments[normalized].push(appointment);
+  });
+
+  const statusSections: Array<{
+    key: "BOOKED" | "COMPLETED" | "CANCELLED" | "NO_SHOW" | "OTHER";
+    title: string;
+  }> = [
+    { key: "BOOKED", title: "Booked" },
+    { key: "COMPLETED", title: "Completed" },
+    { key: "CANCELLED", title: "Cancelled" },
+    { key: "NO_SHOW", title: "No Show" },
+  ];
+
+  if (groupedAppointments.OTHER.length > 0) {
+    statusSections.push({ key: "OTHER", title: "Other" });
+  }
+
   return (
-    <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "30px" }}>
-      <button onClick={() => navigate("/admin")} style={{ marginBottom: "20px" }}>
+    <div className="admin-appointments-page">
+      <div className="admin-appointments-content">
+      <button className="admin-appointments-back" onClick={() => navigate("/admin")}>
         ← Back to Dashboard
       </button>
 
@@ -75,70 +134,73 @@ function HospitalAdminAppointments() {
       <p>All appointments booked at your hospital.</p>
 
       {appointments.length === 0 ? (
-        <div style={{ border: "1px solid #ddd", borderRadius: "10px", padding: "30px", marginTop: "20px" }}>
+        <div className="admin-appointments-empty">
           <h2>No appointments</h2>
           <p>No appointments have been booked for this hospital yet.</p>
         </div>
       ) : (
-        <div style={{ display: "grid", gap: "20px", marginTop: "20px" }}>
-          {appointments.map((appointment) => (
-            <div
-              key={appointment.id}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: "12px",
-                padding: "20px",
-                background: "#fff",
-              }}
-            >
-              <h2 style={{ marginTop: 0 }}>{appointment.patient_name}</h2>
+        <div className="admin-appointments-sections">
+          {statusSections.map((section) => {
+            const sectionAppointments = groupedAppointments[section.key];
 
-              <p>
-                <strong>Patient Email:</strong> {appointment.patient_email}
-              </p>
+            return (
+              <section key={section.key} className="admin-appointments-section">
+                <div className="admin-appointments-section-head">
+                  <h2>{section.title}</h2>
+                  <span>{sectionAppointments.length}</span>
+                </div>
 
-              <p>
-                <strong>Doctor:</strong> {appointment.doctor_name} ({appointment.specialization || "General"})
-              </p>
+                {sectionAppointments.length === 0 ? (
+                  <p className="admin-appointments-empty-status">No appointments in this section.</p>
+                ) : (
+                  <div className="admin-appointments-grid">
+                    {sectionAppointments.map((appointment) => {
+                      const normalizedStatus = normalizeStatus(appointment.status);
+                      const statusClass = normalizedStatus.toLowerCase();
 
-              <p>
-                <strong>Hospital:</strong> {appointment.hospital_name}
-              </p>
+                      return (
+                        <div className={`admin-appointment-card status-${statusClass}`} key={appointment.id}>
+                          <div className="admin-appointment-head">
+                            <h3>{appointment.patient_name}</h3>
+                            <span className={`admin-appointment-badge status-${statusClass}`}>
+                              {section.title}
+                            </span>
+                          </div>
 
-              <p>
-                <strong>Date:</strong> {formatDisplayDate(appointment.appointment_date)}
-              </p>
+                          <p>
+                            <strong>Patient Email:</strong> {appointment.patient_email}
+                          </p>
 
-              <p>
-                <strong>Time:</strong> {appointment.appointment_time}
-              </p>
+                          <p>
+                            <strong>Doctor:</strong> {appointment.doctor_name} ({appointment.specialization || "General"})
+                          </p>
 
-              <p>
-                <strong>Status:</strong>{" "}
-                <span
-                  style={{
-                    color:
-                      appointment.status === "BOOKED"
-                        ? "#0a7b2e"
-                        : appointment.status === "CANCELLED"
-                          ? "#b42318"
-                          : appointment.status === "COMPLETED"
-                            ? "#1d4ed8"
-                            : "#7a5c00",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {appointment.status}
-                </span>
-              </p>
+                          <p>
+                            <strong>Hospital:</strong> {appointment.hospital_name}
+                          </p>
 
-              <p>
-                <strong>Booked On:</strong> {formatDisplayDate(appointment.created_at)}
-              </p>
-            </div>
-          ))}
+                          <p>
+                            <strong>Date:</strong> {formatDisplayDate(appointment.appointment_date)}
+                          </p>
+
+                          <p>
+                            <strong>Time:</strong> {appointment.appointment_time}
+                          </p>
+
+                          <p>
+                            <strong>Booked On:</strong> {formatDisplayDate(appointment.created_at)}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            );
+          })}
         </div>
       )}
+      </div>
     </div>
   );
 }
