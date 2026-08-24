@@ -44,6 +44,9 @@ function ManageDoctors() {
 
   const [showForm, setShowForm] =
     useState(false);
+  
+  const [editingDoctorId, setEditingDoctorId] =
+    useState<string | null>(null);
 
   const [submitting, setSubmitting] =
     useState(false);
@@ -205,7 +208,14 @@ function ManageDoctors() {
     setError("");
     setSuccess("");
 
-    // Validate department
+    const trimmedName = form.name.trim();
+    const trimmedEmail = form.email.trim();
+    const trimmedSpecialization = form.specialization.trim();
+
+    if (!trimmedName || !trimmedEmail || !trimmedSpecialization) {
+      setError("Name, email, and specialization are required");
+      return;
+    }
 
     if (!form.department_id) {
       setError(
@@ -215,56 +225,44 @@ function ManageDoctors() {
       return;
     }
 
+    if (!editingDoctorId && form.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
-
-      // Debug
-      console.log(
-        "Sending doctor data:",
-        {
-          name: form.name,
-          email: form.email,
-          password: form.password,
-          specialization:
-            form.specialization,
-          department_id:
-            form.department_id,
-        }
-      );
-
-
-      // Send request
-
-      const response =
-        await api.post(
-          "/doctors/admin",
+      if (editingDoctorId) {
+        const response = await api.put(
+          `/doctors/admin/${editingDoctorId}`,
           {
-            name: form.name,
-            email: form.email,
-            password: form.password,
-            specialization:
-              form.specialization,
-            department_id:
-              form.department_id,
+            name: trimmedName,
+            email: trimmedEmail,
+            specialization: trimmedSpecialization,
+            department_id: form.department_id,
           }
         );
 
+        setSuccess(
+          response.data.message || "Doctor updated successfully"
+        );
+      } else {
+        const response = await api.post(
+          "/doctors/admin",
+          {
+            name: trimmedName,
+            email: trimmedEmail,
+            password: form.password,
+            specialization: trimmedSpecialization,
+            department_id: form.department_id,
+          }
+        );
 
-      console.log(
-        "Add doctor response:",
-        response.data
-      );
-
-
-      // Success message
-
-      setSuccess(
-        "Doctor added successfully"
-      );
-
-
-      // Reset form
+        setSuccess(
+          response.data.message || "Doctor added successfully"
+        );
+      }
 
       setForm({
         name: "",
@@ -274,26 +272,19 @@ function ManageDoctors() {
         department_id: "",
       });
 
-
-      // Close form
-
+      setEditingDoctorId(null);
       setShowForm(false);
-
-
-      // Reload doctor list
-
       await fetchDoctors();
-
     } catch (error: any) {
 
       console.error(
-        "Add doctor error:",
+        "Doctor save error:",
         error
       );
 
       setError(
         error.response?.data?.message ||
-        "Failed to add doctor"
+          (editingDoctorId ? "Failed to update doctor" : "Failed to add doctor")
       );
 
     } finally {
@@ -312,9 +303,18 @@ function ManageDoctors() {
     setError("");
     setSuccess("");
 
-    setShowForm(
-      !showForm
-    );
+    if (showForm) {
+      setEditingDoctorId(null);
+      setForm({
+        name: "",
+        email: "",
+        password: "",
+        specialization: "",
+        department_id: "",
+      });
+    }
+
+    setShowForm(!showForm);
   };
 
 
@@ -325,6 +325,7 @@ function ManageDoctors() {
   const handleCancel = () => {
 
     setShowForm(false);
+    setEditingDoctorId(null);
 
     setForm({
       name: "",
@@ -335,6 +336,43 @@ function ManageDoctors() {
     });
 
     setError("");
+    setSuccess("");
+  };
+
+  const toggleDoctorAvailability = async (
+    doctorId: string,
+    currentAvailable: boolean
+  ) => {
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await api.patch(
+        `/doctors/admin/${doctorId}/status`,
+        {
+          available: !currentAvailable,
+        }
+      );
+
+      setDoctors((previous) =>
+        previous.map((doctor) =>
+          doctor.id === doctorId
+            ? { ...doctor, available: response.data.doctor.available }
+            : doctor
+        )
+      );
+
+      setSuccess(
+        response.data.message ||
+          `Doctor ${currentAvailable ? "disabled" : "enabled"} successfully`
+      );
+    } catch (error: any) {
+      console.error("Toggle doctor status error:", error);
+      setError(
+        error.response?.data?.message ||
+          "Failed to update doctor status"
+      );
+    }
   };
 
 
@@ -468,7 +506,9 @@ function ManageDoctors() {
         >
 
           <h2>
-            Add Doctor
+            {editingDoctorId
+              ? "Edit Doctor"
+              : "Add Doctor"}
           </h2>
 
 
@@ -539,18 +579,15 @@ function ManageDoctors() {
           <input
             type="password"
             name="password"
-            placeholder="Temporary password"
-            value={form.password}
-            onChange={
-              handleChange
+            placeholder={
+              editingDoctorId
+                ? "Leave blank to keep current password"
+                : "Temporary password"
             }
-            required
+            value={form.password}
+            onChange={handleChange}
+            required={!editingDoctorId}
             minLength={6}
-            style={{
-              width: "100%",
-              padding: "10px",
-              marginTop: "5px",
-            }}
           />
 
           <br />
@@ -667,8 +704,12 @@ function ManageDoctors() {
             }}
           >
             {submitting
-              ? "Adding..."
-              : "Add Doctor"}
+              ? editingDoctorId
+                ? "Updating..."
+                : "Adding..."
+              : editingDoctorId
+                ? "Update Doctor"
+                : "Add Doctor"}
           </button>
 
 
@@ -816,15 +857,25 @@ function ManageDoctors() {
                 <button
                   type="button"
                   onClick={() => {
-                    console.log(
-                      "Edit doctor:",
-                      doctor.id
-                    );
+                    setEditingDoctorId(doctor.id);
+
+                    setForm({
+                      name: doctor.name,
+                      email: doctor.email,
+                      password: "",
+                      specialization:
+                        doctor.specialization || "",
+                      department_id:
+                        doctor.department_id || "",
+                    });
+
+                    setShowForm(true);
+                    setError("");
+                    setSuccess("");
                   }}
                   style={{
                     marginRight: "10px",
-                    padding:
-                      "8px 15px",
+                    padding: "8px 15px",
                   }}
                 >
                   Edit
@@ -833,12 +884,12 @@ function ManageDoctors() {
 
                 <button
                   type="button"
-                  onClick={() => {
-                    console.log(
-                      "Toggle doctor:",
-                      doctor.id
-                    );
-                  }}
+                  onClick={() =>
+                    toggleDoctorAvailability(
+                      doctor.id,
+                      doctor.available
+                    )
+                  }
                   style={{
                     padding:
                       "8px 15px",

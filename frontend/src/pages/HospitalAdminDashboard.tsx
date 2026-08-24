@@ -21,7 +21,11 @@ interface Hospital {
 
 function HospitalAdminDashboard() {
   const navigate = useNavigate();
-
+const user =
+    JSON.parse(
+      localStorage.getItem("user") ||
+      "{}"
+    );
   const [hospital, setHospital] =
     useState<Hospital | null>(null);
 
@@ -116,8 +120,8 @@ function HospitalAdminDashboard() {
         padding: "30px",
       }}
     >
-      <h1>
-        Hospital Admin Dashboard
+      <h1 style={{marginBottom:"20px"}}>
+        Welcome {user.name}
       </h1>
 
       <h2>
@@ -255,17 +259,19 @@ function HospitalAdminDashboard() {
           🏥 Manage Departments
         </button>
 
-        <button
-          onClick={() =>
-            navigate("/hospitals")
-          }
-        >
-          🚨 Emergency Capacity
-        </button>
+        
+          <button
+            onClick={() =>
+              navigate("/admin/emergency")
+            }
+          >
+            🚨 Emergency Capacity
+          </button>
+        
 
         <button
           onClick={() =>
-            navigate("/doctor")
+            navigate("/admin/appointments")
           }
         >
           📅 Appointments

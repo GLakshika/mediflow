@@ -16,9 +16,11 @@ import MyQueue from "./pages/MyQueue";
 import Emergency from "./pages/Emergency";
 import Notifications from "./pages/Notifications";
 import HospitalAdminDashboard from "./pages/HospitalAdminDashboard";
+import HospitalAdminAppointments from "./pages/HospitalAdminAppointments";
 import ManageDoctors from "./pages/ManageDoctors";
 import ManageDepartments from "./pages/ManageDepartments";
 import DoctorDashboard from "./pages/DoctorDashboard";
+import ManageEmergency from "./pages/ManageEmergency.tsx";
 
 function ProtectedRoute({
   children,
@@ -234,6 +236,19 @@ function App() {
       />
 
       <Route
+        path="/admin/appointments"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "HOSPITAL_ADMIN",
+            ]}
+          >
+            <HospitalAdminAppointments />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/doctor"
         element={
           <ProtectedRoute
@@ -244,6 +259,10 @@ function App() {
             <DoctorDashboard />
           </ProtectedRoute>
         }
+      />
+      <Route
+        path="/admin/emergency"
+        element={<ManageEmergency />}
       />
       </Routes>
       

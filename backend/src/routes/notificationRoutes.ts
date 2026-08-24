@@ -3,6 +3,7 @@ import express from "express";
 import {
   getMyNotifications,
   markNotificationAsRead,
+  markAllNotificationsAsRead,
 } from "../controllers/notificationController";
 
 import {
@@ -12,7 +13,7 @@ import {
 const router = express.Router();
 
 router.get(
-  "/my",
+  "/",
   authenticate,
   getMyNotifications
 );
@@ -21,6 +22,14 @@ router.patch(
   "/:id/read",
   authenticate,
   markNotificationAsRead
+);
+
+
+// Mark all notifications as read
+router.patch(
+  "/read-all",
+  authenticate,
+  markAllNotificationsAsRead
 );
 
 export default router;

@@ -90,21 +90,19 @@ function HospitalDashboard() {
 
 
   return (
-    <div
-      style={{
-        maxWidth: "1100px",
-        margin: "0 auto",
-        padding: "30px",
-      }}
-    >
+    <div className="patient-page hospitals-page">
+
+      <div className="patient-page-header">
+        <div className="patient-brand">
+          <img src="/logo.jpg" alt="MediFlow logo" />
+          <span>MediFlow</span>
+        </div>
+        <button className="patient-back-button" onClick={() => navigate("/patient")}>Back to dashboard</button>
+      </div>
 
       {/* PAGE HEADER */}
 
-      <div
-        style={{
-          marginBottom: "30px",
-        }}
-      >
+      <div className="page-title-block">
         <h1>
           Find a Hospital
         </h1>
@@ -131,21 +129,13 @@ function HospitalDashboard() {
             display: "grid",
             gridTemplateColumns:
               "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "20px",
           }}
         >
 
           {hospitals.map(
             (hospital) => (
 
-              <div
-                key={hospital.id}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "12px",
-                  padding: "22px",
-                }}
-              >
+              <div className="hospital-card" key={hospital.id}>
 
                 {/* HOSPITAL NAME */}
 
@@ -192,7 +182,7 @@ function HospitalDashboard() {
 
                 {/* VIEW BUTTON */}
 
-                <button
+                <button className="hospital-view-button"
                   onClick={() =>
                     navigate(
                       `/hospitals/${hospital.id}`
@@ -200,7 +190,6 @@ function HospitalDashboard() {
                   }
                   style={{
                     marginTop: "10px",
-                    padding: "10px 16px",
                     cursor: "pointer",
                   }}
                 >

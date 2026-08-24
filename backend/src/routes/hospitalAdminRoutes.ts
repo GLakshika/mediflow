@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   getAdminDashboard,
+  getAdminAppointments,
 } from "../controllers/hospitalAdminController";
 
 import {
@@ -14,6 +15,12 @@ router.get(
   "/dashboard",
   authenticate,
   getAdminDashboard
+);
+
+router.get(
+  "/appointments",
+  authenticate,
+  getAdminAppointments
 );
 
 export default router;

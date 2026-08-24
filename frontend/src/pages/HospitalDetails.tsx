@@ -157,17 +157,22 @@ function HospitalDetails() {
 
 
   return (
-    <div
-      style={{
-        maxWidth: "1100px",
-        margin: "0 auto",
-        padding: "30px",
-      }}
-    >
+    <div className="patient-page hospital-details-page">
+
+      <div className="patient-page-header">
+        <div className="patient-brand">
+          <img src="/logo.jpg" alt="MediFlow logo" />
+          <span>MediFlow</span>
+        </div>
+        <button className="patient-back-button" onClick={() => navigate("/patient")}>Back to dashboard</button>
+      </div>
+
+      <div className="hospital-details-content">
 
       {/* BACK BUTTON */}
 
       <button
+        className="page-back-link"
         onClick={() =>
           navigate("/hospitals")
         }
@@ -181,7 +186,7 @@ function HospitalDetails() {
 
       {/* HOSPITAL INFORMATION */}
 
-      <div
+      <div className="hospital-details-summary"
         style={{
           border: "1px solid #ddd",
           borderRadius: "12px",
@@ -219,7 +224,7 @@ function HospitalDetails() {
         Emergency Capacity
       </h2>
 
-      <div
+      <div className="hospital-capacity-grid"
         style={{
           display: "grid",
           gridTemplateColumns:
@@ -229,7 +234,7 @@ function HospitalDetails() {
         }}
       >
 
-        <div
+        <div className="capacity-card"
           style={{
             border: "1px solid #ddd",
             borderRadius: "10px",
@@ -251,7 +256,7 @@ function HospitalDetails() {
         </div>
 
 
-        <div
+        <div className="capacity-card"
           style={{
             border: "1px solid #ddd",
             borderRadius: "10px",
@@ -273,7 +278,7 @@ function HospitalDetails() {
         </div>
 
 
-        <div
+        <div className="capacity-card"
           style={{
             border: "1px solid #ddd",
             borderRadius: "10px",
@@ -299,7 +304,7 @@ function HospitalDetails() {
 
       {/* EMERGENCY STATUS */}
 
-      <div
+      <div className="hospital-emergency-card"
         style={{
           border: "1px solid #ddd",
           borderRadius: "10px",
@@ -325,9 +330,8 @@ function HospitalDetails() {
 
       {/* DEPARTMENTS */}
 
-      <h2>
-        Departments
-      </h2>
+      <section className="departments-section">
+        <h2>Departments</h2>
 
       {departments.length === 0 ? (
 
@@ -337,7 +341,7 @@ function HospitalDetails() {
 
       ) : (
 
-        <div
+        <div className="departments-list"
           style={{
             display: "flex",
             flexWrap: "wrap",
@@ -349,7 +353,7 @@ function HospitalDetails() {
           {departments.map(
             (department) => (
 
-              <div
+              <div className="department-card"
                 key={department.id}
                 style={{
                   border: "1px solid #ddd",
@@ -365,6 +369,7 @@ function HospitalDetails() {
 
         </div>
       )}
+      </section>
 
 
       {/* DOCTORS */}
@@ -400,7 +405,7 @@ function HospitalDetails() {
 
           {doctors.map((doctor) => (
 
-            <div
+            <div className="details-doctor-card"
               key={doctor.id}
               style={{
                 border: "1px solid #ddd",
@@ -445,7 +450,7 @@ function HospitalDetails() {
               {/* BOOK APPOINTMENT */}
 
               {doctor.available && (
-                <button
+                <button className="hospital-view-button"
                   onClick={() =>
                     navigate(
                       `/appointments/book?doctorId=${doctor.id}&hospitalId=${hospital.id}`
@@ -462,6 +467,8 @@ function HospitalDetails() {
 
         </div>
       )}
+
+      </div>
 
     </div>
   );

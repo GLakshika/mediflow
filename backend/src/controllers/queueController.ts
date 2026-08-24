@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import {pool} from "../config/database";
+import { createNotification } from "./notificationController";
+
 
 export const getMyQueue = async (
   req: Request,
@@ -277,6 +279,13 @@ export const callPatient = async (
       `,
       [queueId, doctorId]
     );
+    await createNotification({
+      userId: queue.patient_id,
+      title: "Queue Number Called",
+      message:
+        `Your queue number #${queue.queue_number} has been called. Please proceed to the doctor.`,
+      type: "QUEUE_CALLED",
+    });
 
     return res.status(200).json({
       message: "Patient called successfully",
@@ -364,6 +373,7 @@ export const completeQueue = async (
       SELECT
         id,
         appointment_id,
+        patient_id,
         doctor_id,
         status
       FROM queues
@@ -462,6 +472,13 @@ export const completeQueue = async (
       );
 
     }
+    await createNotification({
+      userId: queue.patient_id,
+      title: "Consultation Completed",
+      message:
+        "Your consultation has been completed successfully.",
+      type: "QUEUE_COMPLETED",
+    });
 
     // -------------------------------------------------
     // Commit
@@ -524,6 +541,7 @@ export const skipPatient = async (
         message: "Only doctors can skip patients",
       });
     }
+    await client.query("BEGIN");
 
     // Find doctor profile
     const doctorResult = await client.query(
@@ -550,7 +568,9 @@ export const skipPatient = async (
       `
       SELECT
         id,
+        patient_id,
         appointment_id,
+        queue_number,
         status
       FROM queues
       WHERE id = $1
@@ -570,6 +590,13 @@ export const skipPatient = async (
 
     const queue = queueResult.rows[0];
 
+    if(queue.status !== "CALLED"){
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        message:
+          "Only a called patient can be skipped",
+      });
+    }
     const appointmentResult = await client.query(
       `
       SELECT id, status
@@ -618,6 +645,13 @@ export const skipPatient = async (
         [queue.appointment_id, doctorId]
       );
     }
+    await createNotification({
+      userId: queue.patient_id,
+      title: "Queue Skipped",
+      message:
+        `Your queue number #${queue.queue_number} was skipped. Please contact the hospital if you still need the consultation.`,
+      type: "QUEUE_SKIPPED",
+    });
 
     await client.query("COMMIT");
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
-import { formatDisplayDate } from "../utils/date";
+import { formatDateForInput, formatDisplayDate } from "../utils/date";
 
 interface Appointment {
   id: string;
@@ -33,6 +33,10 @@ interface QueueEntry {
 
 function DoctorDashboard() {
   const navigate = useNavigate();
+  const storedUser = localStorage.getItem("user");
+  const doctorName = storedUser
+    ? JSON.parse(storedUser).name || "Doctor"
+    : "Doctor";
 
   // =====================================================
   // APPOINTMENTS
@@ -264,11 +268,52 @@ function DoctorDashboard() {
       );
     }
   };
-  const nextWaitingPatient =
-  queue.find(
-    (entry) =>
-      entry.status === "WAITING"
+  const toLocalDateKey = (
+    value?: string | null
+  ): string => {
+    if (!value) {
+      return "";
+    }
+
+    const trimmedValue = value.trim();
+
+    // Keep pure YYYY-MM-DD values unchanged to avoid timezone shifts.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmedValue)) {
+      return trimmedValue;
+    }
+
+    const parsedDate = new Date(trimmedValue);
+
+    if (!Number.isNaN(parsedDate.getTime())) {
+      return formatDateForInput(parsedDate);
+    }
+
+    return trimmedValue.split("T")[0] || trimmedValue;
+  };
+
+  const today = formatDateForInput(new Date());
+  const todaysAppointments = appointments.filter(
+    (appointment) => toLocalDateKey(appointment.appointment_date) === today
   );
+  const todaysQueue = queue.filter(
+    (entry) => toLocalDateKey(entry.appointment_date) === today
+  );
+  const upcomingAppointments = appointments
+    .filter(
+      (appointment) => toLocalDateKey(appointment.appointment_date) > today
+    )
+    .sort((first, second) => {
+      const firstDate = `${toLocalDateKey(first.appointment_date)}T${first.appointment_time || "00:00:00"}`;
+      const secondDate = `${toLocalDateKey(second.appointment_date)}T${second.appointment_time || "00:00:00"}`;
+      return firstDate.localeCompare(secondDate);
+    });
+
+  const nextWaitingPatient =
+    todaysQueue.find(
+      (entry) =>
+        entry.status === "WAITING"
+    );
+
   // =====================================================
   // SKIP PATIENT
   // =====================================================
@@ -350,7 +395,7 @@ function DoctorDashboard() {
   // =====================================================
 
   return (
-    <div
+    <div className="doctor-page"
       style={{
         maxWidth: "1100px",
         margin: "0 auto",
@@ -358,39 +403,64 @@ function DoctorDashboard() {
       }}
     >
 
-      <h1>
-        Doctor Dashboard
-      </h1>
+      <header className="doctor-header">
+        <div className="doctor-brand">
+          <img src="/logo.jpg" alt="MediFlow logo" />
+          <span>MediFlow</span>
+        </div>
+        <div className="doctor-header-actions">
+          <span className="doctor-status-dot" />
+          <span>Doctor workspace</span>
+          <button className="doctor-logout" onClick={() => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navigate("/login");
+          }}>Sign out</button>
+        </div>
+      </header>
+
+      <div className="doctor-welcome">
+      <div>
+      <p className="doctor-eyebrow">CLINICAL OVERVIEW</p>
+      <h1>🩺 {doctorName}</h1>
 
       <p>
         Manage your appointments
         and patient queue.
       </p>
+      </div>
+      <span className="doctor-date">{new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}</span>
+      </div>
+
+      <div className="doctor-stat-grid">
+        <div className="doctor-stat"><strong>{todaysAppointments.length}</strong><span>Appointments today</span></div>
+        <div className="doctor-stat"><strong>{todaysQueue.filter((entry) => entry.status === "WAITING").length}</strong><span>Patients waiting</span></div>
+        <div className="doctor-stat"><strong>{todaysAppointments.filter((appointment) => appointment.status === "COMPLETED").length}</strong><span>Completed today</span></div>
+      </div>
+
+      <div className="doctor-sections">
 
 
       {/* =================================================
           TODAY'S APPOINTMENTS
       ================================================= */}
 
-      <section
-        style={{
-          marginTop: "30px",
-        }}
-      >
+      <section>
 
         <h2>
           Today's Appointments
         </h2>
 
-        {appointments.length === 0 ? (
+        {todaysAppointments.length === 0 ? (
 
           <p>
+            <br></br>
             No appointments found.
           </p>
 
         ) : (
 
-          appointments.map(
+          todaysAppointments.map(
             (appointment) => (
 
               <div
@@ -531,11 +601,7 @@ function DoctorDashboard() {
           PATIENT QUEUE
       ================================================= */}
 
-      <section
-        style={{
-          marginTop: "50px",
-        }}
-      >
+      <section>
 
         <div
           style={{
@@ -561,10 +627,10 @@ function DoctorDashboard() {
         </div>
 
 
-        {queue.length === 0 ? (
+          {todaysQueue.length === 0 ? (
   <p>No patients in the queue.</p>
 ) : (
-  queue.map((entry) => {
+        todaysQueue.map((entry) => {
     const isNextPatient =
       nextWaitingPatient?.id === entry.id;
 
@@ -717,7 +783,37 @@ function DoctorDashboard() {
   })
 )}
 </section>
-</div>
+
+  <section className="upcoming-panel">
+        <div className="upcoming-heading">
+          <div>
+            <p className="panel-kicker">NEXT ON YOUR SCHEDULE</p>
+            <h2>Upcoming Appointments</h2>
+          </div>
+          <span className="panel-count">{upcomingAppointments.length} scheduled</span>
+        </div>
+        {upcomingAppointments.length === 0 ? (
+          <p className="upcoming-empty">No upcoming appointments.</p>
+        ) : (
+          upcomingAppointments.map((appointment) => (
+            <div className="upcoming-row" key={appointment.id}>
+              <div className="upcoming-date">
+                <strong>{formatDisplayDate(appointment.appointment_date)}</strong>
+                <span>{appointment.appointment_time}</span>
+              </div>
+              <div>
+                <h3>{appointment.patient_name}</h3>
+                <p>{appointment.patient_email}</p>
+              </div>
+              <span className={`status-badge status-${appointment.status.toLowerCase()}`}>
+                {appointment.status.replace("_", " ")}
+              </span>
+            </div>
+          ))
+        )}
+      </section>
+      </div>
+    </div>
   );
 }
 
