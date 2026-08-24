@@ -1,8 +1,18 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function PatientDashboard() {
 
   const navigate = useNavigate();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   const user =
     JSON.parse(
@@ -47,7 +57,10 @@ export default function PatientDashboard() {
             <h1>Welcome, {user.name || "there"}</h1>
             <p>Find care, manage appointments, and stay connected with your healthcare team.</p>
           </div>
-          <div className="patient-welcome-mark">&#10010;</div>
+          <time className="patient-welcome-mark" dateTime={currentTime.toISOString()}>
+            <strong>{currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</strong>
+            <span>{currentTime.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}</span>
+          </time>
         </div>
 
 

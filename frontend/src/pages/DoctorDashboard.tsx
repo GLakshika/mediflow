@@ -268,26 +268,52 @@ function DoctorDashboard() {
       );
     }
   };
+  const toLocalDateKey = (
+    value?: string | null
+  ): string => {
+    if (!value) {
+      return "";
+    }
+
+    const trimmedValue = value.trim();
+
+    // Keep pure YYYY-MM-DD values unchanged to avoid timezone shifts.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmedValue)) {
+      return trimmedValue;
+    }
+
+    const parsedDate = new Date(trimmedValue);
+
+    if (!Number.isNaN(parsedDate.getTime())) {
+      return formatDateForInput(parsedDate);
+    }
+
+    return trimmedValue.split("T")[0] || trimmedValue;
+  };
+
   const today = formatDateForInput(new Date());
   const todaysAppointments = appointments.filter(
-    (appointment) => appointment.appointment_date.split("T")[0] === today
+    (appointment) => toLocalDateKey(appointment.appointment_date) === today
   );
   const todaysQueue = queue.filter(
-    (entry) => entry.appointment_date?.split("T")[0] === today
+    (entry) => toLocalDateKey(entry.appointment_date) === today
   );
   const upcomingAppointments = appointments
-    .filter((appointment) => appointment.appointment_date.split("T")[0] > today)
+    .filter(
+      (appointment) => toLocalDateKey(appointment.appointment_date) > today
+    )
     .sort((first, second) => {
-      const firstDate = `${first.appointment_date}T${first.appointment_time}`;
-      const secondDate = `${second.appointment_date}T${second.appointment_time}`;
+      const firstDate = `${toLocalDateKey(first.appointment_date)}T${first.appointment_time || "00:00:00"}`;
+      const secondDate = `${toLocalDateKey(second.appointment_date)}T${second.appointment_time || "00:00:00"}`;
       return firstDate.localeCompare(secondDate);
     });
 
   const nextWaitingPatient =
-  todaysQueue.find(
-    (entry) =>
-      entry.status === "WAITING"
-  );
+    todaysQueue.find(
+      (entry) =>
+        entry.status === "WAITING"
+    );
+
   // =====================================================
   // SKIP PATIENT
   // =====================================================
@@ -396,7 +422,7 @@ function DoctorDashboard() {
       <div className="doctor-welcome">
       <div>
       <p className="doctor-eyebrow">CLINICAL OVERVIEW</p>
-      <h1>🩺 Dr. {doctorName}</h1>
+      <h1>🩺 {doctorName}</h1>
 
       <p>
         Manage your appointments
@@ -419,13 +445,7 @@ function DoctorDashboard() {
           TODAY'S APPOINTMENTS
       ================================================= */}
 
-      <section
-        style={{
-          marginTop: "50px",
-          marginLeft:"70px",
-          height:"100px"
-        }}
-      >
+      <section>
 
         <h2>
           Today's Appointments
@@ -581,13 +601,7 @@ function DoctorDashboard() {
           PATIENT QUEUE
       ================================================= */}
 
-      <section
-        style={{
-          marginTop: "50px",
-          marginRight:"70px",
-          height:"100px"
-        }}
-      >
+      <section>
 
         <div
           style={{
@@ -769,8 +783,8 @@ function DoctorDashboard() {
   })
 )}
 </section>
-</div>
-      <section className="upcoming-panel">
+
+  <section className="upcoming-panel">
         <div className="upcoming-heading">
           <div>
             <p className="panel-kicker">NEXT ON YOUR SCHEDULE</p>
@@ -798,7 +812,8 @@ function DoctorDashboard() {
           ))
         )}
       </section>
-</div>
+      </div>
+    </div>
   );
 }
 

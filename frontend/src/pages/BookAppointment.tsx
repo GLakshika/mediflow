@@ -227,6 +227,7 @@ function BookAppointment() {
 
   return (
     <div
+      className="patient-page book-page"
       style={{
         maxWidth: "600px",
         margin: "0 auto",
@@ -234,7 +235,21 @@ function BookAppointment() {
       }}
     >
 
+      <div className="patient-page-header">
+        <div className="patient-brand">
+          <img src="/logo.jpg" alt="MediFlow logo" />
+          <span>MediFlow</span>
+        </div>
+        <button
+          className="patient-back-button"
+          onClick={() => navigate(`/hospitals/${hospitalId}`)}
+        >
+          Back to Hospital
+        </button>
+      </div>
+
       <button
+        className="page-back-link"
         onClick={() =>
           navigate(
             `/hospitals/${hospitalId}`
@@ -248,15 +263,19 @@ function BookAppointment() {
       </button>
 
 
+      <div className="page-title-block">
+      <p className="patient-eyebrow">APPOINTMENT SERVICES</p>
       <h1>
         Book Appointment
       </h1>
+      <p>Choose a convenient time for your consultation.</p>
+      </div>
 
 
       {/* DOCTOR */}
 
       {doctor && (
-        <div
+        <div className="booking-info-card"
           style={{
             border: "1px solid #ddd",
             borderRadius: "10px",
@@ -295,7 +314,7 @@ function BookAppointment() {
       {/* HOSPITAL */}
 
       {hospital && (
-        <div
+        <div className="booking-info-card hospital-info-card"
           style={{
             border: "1px solid #ddd",
             borderRadius: "10px",
@@ -338,7 +357,7 @@ function BookAppointment() {
           style={{
             marginBottom: "15px",
             padding: "15px",
-            border: "1px solid green",
+            marginLeft:"70px",
           }}
         >
 
@@ -368,6 +387,7 @@ function BookAppointment() {
       {!success && (
 
         <form
+          className="booking-form"
           onSubmit={handleBooking}
         >
 
